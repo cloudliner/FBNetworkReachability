@@ -139,8 +139,13 @@
         title = [dict objectForKey:@"ConnectionMode"];
     }
     cell.textLabel.text = title;
-    cell.detailTextLabel.text = [[dict objectForKey:@"Timestamp"] description];
-    
+  
+    NSDate *timestamp = [dict objectForKey:@"Timestamp"];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSSZZZ"];
+    NSString *dateString = [formatter stringFromDate:timestamp];
+    cell.detailTextLabel.text = dateString;
+  
     return cell;
 }
 
