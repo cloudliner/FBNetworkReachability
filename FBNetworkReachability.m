@@ -26,7 +26,9 @@
 #import <ifaddrs.h>
 #import <net/if.h>
 
-@interface FBNetworkReachability()
+@interface FBNetworkReachability() {
+  double _lastCheckedTime;
+}
 @property (assign) FBNetworkReachabilityConnectionMode connectionMode;
 @property (copy) NSString* ipaddress;
 @end
@@ -198,6 +200,8 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 //------------------------------------------------------------------------------
 FBNetworkReachability* sharedInstance_ = nil;
 
+static const double kCHECK_INTERVAL = 3.0;
+
 + (FBNetworkReachability*)sharedInstance
 {
     static dispatch_once_t onceToken;
@@ -218,6 +222,7 @@ FBNetworkReachability* sharedInstance_ = nil;
     SCNetworkReachabilityFlags flags = 0;
     SCNetworkReachabilityGetFlags(reachability_, &flags);
     [self _updateConnectionModeWithFlags:flags];
+    _lastCheckedTime = CFAbsoluteTimeGetCurrent();
 }
 
 //------------------------------------------------------------------------------
@@ -226,6 +231,10 @@ FBNetworkReachability* sharedInstance_ = nil;
 //------------------------------------------------------------------------------
 - (BOOL)reachable
 {
+    double currentTime = CFAbsoluteTimeGetCurrent();
+    if (kCHECK_INTERVAL < (currentTime - _lastCheckedTime)) {
+        [self refresh];
+    }
     if (self.connectionMode == FBNetworkReachableWiFi ||
         self.connectionMode == FBNetworkReachableWWAN) {
         return YES;
