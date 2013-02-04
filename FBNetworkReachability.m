@@ -231,10 +231,6 @@ static const double kCHECK_INTERVAL = 3.0;
 //------------------------------------------------------------------------------
 - (BOOL)reachable
 {
-    double currentTime = CFAbsoluteTimeGetCurrent();
-    if (kCHECK_INTERVAL < (currentTime - _lastCheckedTime)) {
-        [self refresh];
-    }
     if (self.connectionMode == FBNetworkReachableWiFi ||
         self.connectionMode == FBNetworkReachableWWAN) {
         return YES;
@@ -246,6 +242,8 @@ static const double kCHECK_INTERVAL = 3.0;
 - (FBNetworkReachabilityConnectionMode)connectionMode
 {
     if (connectionMode_ == FBNetworkReachableUninitialization) {
+        [self refresh];
+    } else if (kCHECK_INTERVAL < (CFAbsoluteTimeGetCurrent() - _lastCheckedTime)) {
         [self refresh];
     }
     @synchronized (self) {
